@@ -41,14 +41,14 @@ def chave():
         k = st.secrets.get("GEMINI_API_KEY", "")
     except Exception:
         k = ""
-    return k or os.getenv("GEMINI_API_KEY", "") or st.session_state.get("chave", "")
+    return k or os.getenv("GEMINI_API_KEY", "") or st.session_state.get("_chave", "")
 
 
 def chamar_ia(sistema, usuario, como_json=False):
     """Retorna (texto, erro). Nunca levanta exceção para a tela."""
     k = chave()
     if not k:
-        return None, "Falta a chave. Toque em «Configurar chave» na tela inicial."
+        return None, "Falta a chave. Salve sua chave no quadro acima."
     try:
         from google import genai
         from google.genai import types
@@ -137,6 +137,28 @@ def topo(titulo, sub):
         st.rerun()
     st.markdown(f"# {titulo}")
     st.markdown(f"<div class='sub'>{sub}</div>", unsafe_allow_html=True)
+    caixa_chave()
+
+
+def caixa_chave():
+    """Guarda a chave em st.session_state['_chave'] (não preso a um widget, então
+    não some ao trocar de tela). Dura até o fim da sessão do navegador."""
+    if chave():
+        with st.expander("🔑 Chave salva nesta sessão"):
+            if st.button("Remover chave", key="rm_chave"):
+                st.session_state.pop("_chave", None)
+                st.rerun()
+        return
+    with st.form("form_chave"):
+        st.markdown("**🔑 Cole sua chave do Gemini (1 vez)**")
+        st.caption("Grátis em aistudio.google.com/apikey. Fica salva até você fechar o site.")
+        nova = st.text_input("Chave", type="password", label_visibility="collapsed")
+        if st.form_submit_button("Salvar chave", type="primary"):
+            if nova.strip():
+                st.session_state["_chave"] = nova.strip()
+                st.rerun()
+            else:
+                st.error("Cole a chave antes de salvar.")
 
 
 def home():
@@ -151,13 +173,7 @@ def home():
     ]
     for k, nome in itens:
         st.button(nome, key=f"b_{k}", on_click=ir, args=(k,))
-    if not chave():
-        with st.expander("🔑 Configurar chave (1 vez)", expanded=True):
-            st.caption("Chave gratuita em aistudio.google.com/apikey. Fica só nesta sessão.")
-            st.text_input("Cole sua chave", type="password", key="chave")
-    else:
-        with st.expander("🔑 Trocar chave"):
-            st.text_input("Cole sua chave", type="password", key="chave")
+    caixa_chave()
 
 
 def mostrar_x1():
