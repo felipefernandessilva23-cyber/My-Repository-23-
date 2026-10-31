@@ -8,7 +8,7 @@ import streamlit as st
 # Troque aqui se o Google mudar o nome do modelo.
 MODELO = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
-st.set_page_config(page_title="Central de IA para Vendedores", page_icon="⚡", layout="centered")
+st.set_page_config(page_title="Central de IA para Vendedores⚙️", page_icon="⚡", layout="centered")
 
 CSS = """
 <style>
